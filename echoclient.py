@@ -1,11 +1,32 @@
 import socket
+from model import Message
+from helper import Style
+from datetime import datetime
+from helper import MessageParser
+from helper import const
+import threading
 
-HOST = '127.0.0.1'  # The server's hostname or IP address
-PORT = 65432        # The port used by the server
+HOST = const.HOST
+PORT = const.PORT
+
+def mlisten(s: socket):
+    while True:
+        data = s.recv(1024)
+        if not data:
+            break
+        m = MessageParser.bytearraytomessage(data)
+        print(Style.printmessage(m))
+
+print("Welcome to ChatZ")
+
+UNAME = input("Whats your name? :")
 
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
     s.connect((HOST, PORT))
-    s.sendall(b'Hello, world')
-    data = s.recv(1024)
+    threading.Thread(target=mlisten, args=(s))
+    while True:
+        string = input("New Message: ")
+        m = Message.Message(datetime.now().strftime("%m/%d/%Y, %H:%M:%S"), string, UNAME)
+        send = MessageParser.messagetobytearray(m)
 
-print('Received', repr(data))
+        s.send(send)
