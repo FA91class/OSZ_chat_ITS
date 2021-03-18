@@ -26,6 +26,8 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
     threading.Thread(target=mlisten, args=(s))
     while True:
         string = input("New Message: ")
+        if "!logout" in string:
+            break
         m = Message.Message(datetime.now().strftime("%m/%d/%Y, %H:%M:%S"), string, UNAME)
         send = MessageParser.messagetobytearray(m)
 

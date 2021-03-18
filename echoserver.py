@@ -1,5 +1,4 @@
 import socket
-from model import Message
 from helper import MessageParser
 from helper import Style
 from helper import const
@@ -19,7 +18,6 @@ def on_new_client(clientsocket:socket.socket, addr, globalsocket:socket.socket):
         globalsocket.sendall(msg)
     clientsocket.close()
 
-
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
     s.bind((HOST, PORT))
     s.listen()
@@ -27,5 +25,3 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
     while True:
         conn, addr = s.accept()
         threading.Thread(target=on_new_client, args=(conn, addr, s))
-        
-    s.close()
