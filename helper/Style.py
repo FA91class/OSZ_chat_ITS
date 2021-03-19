@@ -8,12 +8,14 @@ def space():
 
 
 def print_message(msg: Message.Message):
-    print("[" + msg.timestamp + "](" + msg.sender + "): " + msg.msg)
+    message = "[" + msg.timestamp + "](" + msg.sender + "): " + msg.msg
+    print(message)
+    return message
 
 
 def logout_message(msg: Message.Message):
-    print("[" + msg.timestamp + "](" + msg.sender + ") // Logged out ")
+    return "[" + msg.timestamp + "](" + msg.sender + ") // Logged out "
 
 
 def login_message(msg: Message.Message):
-    print("[" + msg.timestamp + "](" + msg.sender + ") // Logged out ")
+    return "[" + msg.timestamp + "](" + msg.sender + ") // Logged in "

@@ -9,4 +9,5 @@ def message_to_byte_array(msg: Message.Message):
 
 
 def byte_array_to_message(b: bytearray):
-    return json.loads(b.decode("utf8"))
+    d = json.loads(b.decode("utf8"))
+    return Message.Message(d["timestamp"], d["msg"], d["sender"])

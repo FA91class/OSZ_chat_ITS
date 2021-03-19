@@ -1,4 +1,6 @@
 import socket
+from model import Message
+from model import Session
 from helper import MessageParser
 from helper import Style
 from helper import const
@@ -7,17 +9,31 @@ import threading
 HOST = const.HOST
 PORT = const.PORT
 
+SESSION = Session.Session()
 
-def on_new_client(client_socket: socket.socket, address, global_socket: socket.socket):
+def on_new_client(client_socket: socket.socket, address):
     print('Connected by ', address)
-    while True:
-        msg = client_socket.recv(1024)
-        if not msg:
-            break
-        m = MessageParser.byte_array_to_message(msg)
-        print(Style.print_message(m))
-        global_socket.sendall(msg)
-    client_socket.close()
+    try:
+        while True:
+            msg = client_socket.recv(1024)
+            if not msg:
+                break
+            m: Message.Message = MessageParser.byte_array_to_message(msg)
+            if "LOGOUT" in m.msg:
+                m.msg = Style.logout_message(m)
+                msg = MessageParser.message_to_byte_array(m)
+                client_socket.sendall(msg)
+                client_socket.close()
+            if "LOGIN" in m.msg:
+                m.msg = Style.login_message(m)
+                msg = MessageParser.message_to_byte_array(m)
+            else:
+                m.msg = Style.print_message(m)
+                msg = MessageParser.message_to_byte_array(m)
+            client_socket.sendall(msg)
+        client_socket.close()
+    except (ConnectionAbortedError, ConnectionResetError):
+        print("Connection with " + str(address) + " closed!")
 
 
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
@@ -26,4 +42,6 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
 
     while True:
         conn, address = s.accept()
-        threading.Thread(target=on_new_client, args=(conn, address, s))
+
+        thread = threading.Thread(target=on_new_client, args=(conn, address))
+        thread.start()
