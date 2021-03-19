@@ -11,6 +11,7 @@ PORT = const.PORT
 
 SESSION = Session.Session()
 
+
 def on_new_client(client_socket: socket.socket, address):
     print('Connected by ', address)
     try:
@@ -20,17 +21,22 @@ def on_new_client(client_socket: socket.socket, address):
                 break
             m: Message.Message = MessageParser.byte_array_to_message(msg)
             if "LOGOUT" in m.msg:
+                SESSION.socketList.remove(client_socket)
                 m.msg = Style.logout_message(m)
                 msg = MessageParser.message_to_byte_array(m)
-                client_socket.sendall(msg)
+                SESSION.broadcast_message(msg)
+                print(m.msg)
                 client_socket.close()
+                break
             if "LOGIN" in m.msg:
                 m.msg = Style.login_message(m)
                 msg = MessageParser.message_to_byte_array(m)
+                SESSION.socketList.append(client_socket)
+                SESSION.broadcast_message(msg)
             else:
                 m.msg = Style.print_message(m)
                 msg = MessageParser.message_to_byte_array(m)
-            client_socket.sendall(msg)
+            SESSION.broadcast_message(msg)
         client_socket.close()
     except (ConnectionAbortedError, ConnectionResetError):
         print("Connection with " + str(address) + " closed!")
