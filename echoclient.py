@@ -1,11 +1,11 @@
 import socket
-from model import Message
-from helper import Style
+import sys
+import threading
 from datetime import datetime
+
 from helper import MessageParser
 from helper import const
-import threading
-import sys
+from model import Message
 
 HOST = const.HOST
 PORT = const.PORT
