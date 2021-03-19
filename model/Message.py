@@ -6,4 +6,3 @@ class Message(object):
         self.timestamp = timestamp
         self.msg = msg
         self.sender = sender
-        
