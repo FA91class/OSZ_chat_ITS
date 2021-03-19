@@ -27,7 +27,7 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
     s.connect((HOST, PORT))
     threading.Thread(target=message_listener, args=(s))
     while True:
-        string = input("")
+        string = input()
         if "!logout" in string:
             break
         m = Message.Message(datetime.now().strftime("%m/%d/%Y, %H:%M:%S"), string, UNAME)
