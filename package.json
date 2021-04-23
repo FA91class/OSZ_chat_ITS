@@ -1,0 +1,26 @@
+{
+    "name": "osz_chat_its",
+    "version": "1.0.0",
+    "description": "A simple client/server chat in python",
+    "main": "echoclient.py",
+    "scripts": {
+        "client": "py echoclient.py",
+        "server": "py echoserver.py"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/FA91class/OSZ_chat_ITS.git"
+    },
+    "keywords": [
+        "python",
+        "chat",
+        "client",
+        "server"
+    ],
+    "author": "Jonas Pfalzgraf",
+    "license": "MIT",
+    "bugs": {
+        "url": "https://github.com/FA91class/OSZ_chat_ITS/issues"
+    },
+    "homepage": "https://github.com/FA91class/OSZ_chat_ITS#readme"
+}
