@@ -35,7 +35,7 @@ try:
         thread = threading.Thread(target=message_listener, args=[s])
         thread.start()
         m = Message.Message(datetime.now().strftime(const.TIME_FILTER), "LOGIN", UNAME)
-        send = MessageParser.message_to_byte_array(m)
+        send = MessageParser.message_to_bytes(m)
         s.send(send)
         while True:
             string = input("$~ ")
@@ -43,12 +43,12 @@ try:
             sys.stdout.write(ERASE_LINE)
             if "!logout" in string:
                 m = Message.Message(datetime.now().strftime(const.TIME_FILTER), "LOGOUT", UNAME)
-                send = MessageParser.message_to_byte_array(m)
+                send = MessageParser.message_to_bytes(m)
 
                 s.send(send)
                 break
             m = Message.Message(datetime.now().strftime(const.TIME_FILTER), string, UNAME)
-            send = MessageParser.message_to_byte_array(m)
+            send = MessageParser.message_to_bytes(m)
 
             s.send(send)
 
