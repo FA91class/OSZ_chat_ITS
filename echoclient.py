@@ -38,7 +38,7 @@ try:
         send = MessageParser.message_to_bytes(m)
         s.send(send)
         while True:
-            string = input("$~ ")
+            string = input("")
             sys.stdout.write(CURSOR_UP_ONE)
             sys.stdout.write(ERASE_LINE)
             if "!logout" in string:
