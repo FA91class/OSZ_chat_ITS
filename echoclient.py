@@ -13,14 +13,14 @@ CURSOR_UP_ONE = '\x1b[1A'
 ERASE_LINE = '\x1b[2K'
 
 
-def message_listener(s: socket):
+def message_listener(skt: socket.socket):
     try:
         while True:
-            data = s.recv(1024)
+            data = skt.recv(1024)
             if not data:
                 break
-            m: Message.Message = MessageParser.byte_array_to_message(data)
-            print(m.msg)
+            msg: Message.Message = MessageParser.bytes_to_message(data)
+            print(msg.msg)
     except (ConnectionAbortedError, ConnectionResetError):
         print("Connection with server closed!")
 
