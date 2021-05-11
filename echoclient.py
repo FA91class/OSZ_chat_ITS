@@ -5,6 +5,7 @@ from datetime import datetime
 
 from helper import MessageParser
 from helper import const
+from helper.ApiCaller import APICaller
 from model import Message
 
 HOST = const.HOST
@@ -19,7 +20,8 @@ def message_listener(skt: socket.socket):
             data = skt.recv(1024)
             if not data:
                 break
-            msg: Message.Message = MessageParser.bytes_to_message(data)
+            msg: Message.Message = MessageParser.bytes_to_message(
+                APICaller.decryptData(data, const.SERVER_MODE))
             print(msg.msg)
     except (ConnectionAbortedError, ConnectionResetError):
         print("Connection with server closed!")
@@ -28,29 +30,34 @@ def message_listener(skt: socket.socket):
 print("Welcome to ChatZ")
 
 UNAME = input("Whats your name? :")
+APICaller.checkKeys(const.CLIENT_MODE, UNAME.strip())
 
 try:
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         s.connect((HOST, PORT))
         thread = threading.Thread(target=message_listener, args=[s])
         thread.start()
-        m = Message.Message(datetime.now().strftime(const.TIME_FILTER), "LOGIN", UNAME)
+        m = Message.Message(datetime.now().strftime(
+            const.TIME_FILTER), "LOGIN", UNAME)
         send = MessageParser.message_to_bytes(m)
-        s.send(send)
+        s.send(APICaller.encryptData(send, const.CLIENT_MODE, m.sender))
         while True:
             string = input("")
             sys.stdout.write(CURSOR_UP_ONE)
             sys.stdout.write(ERASE_LINE)
             if "!logout" in string:
-                m = Message.Message(datetime.now().strftime(const.TIME_FILTER), "LOGOUT", UNAME)
+                m = Message.Message(datetime.now().strftime(
+                    const.TIME_FILTER), "LOGOUT", UNAME)
                 send = MessageParser.message_to_bytes(m)
 
-                s.send(send)
+                s.send(APICaller.encryptData(
+                    send, const.CLIENT_MODE, m.sender))
                 break
-            m = Message.Message(datetime.now().strftime(const.TIME_FILTER), string, UNAME)
+            m = Message.Message(datetime.now().strftime(
+                const.TIME_FILTER), string, UNAME)
             send = MessageParser.message_to_bytes(m)
 
-            s.send(send)
+            s.send(APICaller.encryptData(send, const.CLIENT_MODE, m.sender))
 
 except (ConnectionAbortedError, ConnectionResetError):
     print("Connection with server closed!")
