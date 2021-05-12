@@ -25,7 +25,8 @@ def on_new_client(client_socket: socket.socket, addr):
             msg = client_socket.recv(1024)
             if not msg:
                 break
-            m: Message.Message = MessageParser.bytes_to_message(APICaller.decryptData(msg, const.SERVER_MODE))
+            m: Message.Message = MessageParser.bytes_to_message(
+                APICaller.decryptData(msg, const.SERVER_MODE))
             if "LOGOUT" in m.msg:
                 SESSION.socket_list.remove(client_socket)
                 m.msg = Style.logout_message(m)
@@ -59,6 +60,9 @@ def on_new_client(client_socket: socket.socket, addr):
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
     s.bind((HOST, PORT))
     s.listen()
+    nameparts = const.HOST.split('.')
+    hostName = '_'.join(nameparts)
+    APICaller.createNewKey(hostName, const.SERVER_MODE)
 
     while True:
         conn, address = s.accept()

@@ -21,7 +21,7 @@ def message_listener(skt: socket.socket):
             if not data:
                 break
             msg: Message.Message = MessageParser.bytes_to_message(
-                APICaller.decryptData(data, const.SERVER_MODE))
+                APICaller.decryptData(data, const.CLIENT_MODE))
             print(msg.msg)
     except (ConnectionAbortedError, ConnectionResetError):
         print("Connection with server closed!")
@@ -30,7 +30,7 @@ def message_listener(skt: socket.socket):
 print("Welcome to ChatZ")
 
 UNAME = input("Whats your name? :")
-APICaller.checkKeys(const.CLIENT_MODE, UNAME.strip())
+APICaller.createNewKey(UNAME.strip(), const.CLIENT_MODE)
 
 try:
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:

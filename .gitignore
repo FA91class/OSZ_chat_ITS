@@ -492,4 +492,6 @@ FodyWeavers.xsd
 
 .oszChat
 
-.oszChatKey
+.oszChatKeyServer
+
+.oszChatKeyClient

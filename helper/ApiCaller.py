@@ -1,67 +1,125 @@
+from Crypto import PublicKey
+from model.Key import Key
 import os
 import json
 import requests
-import rsa
+from Crypto.PublicKey import RSA
+from Crypto.Cipher import PKCS1_OAEP
 from helper import const
-from model import Keys
 
 
 class APICaller():
 
-    def checkKeys(mode, *name):
-        filename = "keys.json"
-        file = const.KEY_PATH + filename
+    def createNewFiles(mode):
+        
+        if mode == const.CLIENT_MODE:
+            filenamePrv = const.KEY_PRV_FILE_NAME
+            filePrv = const.KEY_PATH_CLIENT + filenamePrv
 
-        if os.path.exists(const.KEY_PATH) == False:
-            os.mkdir(const.KEY_PATH)
-            f = open(file, "x")
-            f.close
+            filenamePub = const.KEY_PUB_FILE_NAME
+            filePub = const.KEY_PATH_CLIENT + filenamePub
 
-        if os.path.isfile(file) == False:
-            f = open(file, "x")
-            f.close
-
-            if mode == 'client':
-                keys = APICaller.createNewKey(name)
-                f = open(file, "w")
-                f.write(keys)
-                f.close
-            if mode == 'server':
-                nameparts = const.HOST.split('.')
-                hostName = '_'.join(nameparts)
-                keys = APICaller.createNewKey(hostName)
-                f = open(file, "w")
-                f.write(keys)
+            if os.path.exists(filePrv):
+                os.remove(filePrv)
+                f = open(filePrv, "x")
                 f.close
 
-    def createNewKey(name):
+            if os.path.exists(const.KEY_PATH_CLIENT) == False:
+                os.mkdir(const.KEY_PATH_CLIENT)
+                f = open(filePrv, "x")
+                f.close
 
-        (pubkey, privkey) = rsa.newkeys(4096)
+            if os.path.exists(filePub):
+                os.remove(filePub)
+                f = open(filePub, "x")
+                f.close
 
-        params = Keys(name, privkey, pubkey)
+            if os.path.exists(const.KEY_PATH_CLIENT) == False:
+                os.mkdir(const.KEY_PATH_CLIENT)
+                f = open(filePub, "x")
+                f.close
 
-        data = json.dumps(params)
+        if mode == const.SERVER_MODE:
+            filenamePrv = const.KEY_PRV_FILE_NAME
+            filePrv = const.KEY_PATH_SERVER + filenamePrv
 
-        requests.post('https://' + const.KEY_SERVER + ':' +
-                      const.KEY_SERVER_PORT + const.KEY_CREATE_NEW_KEY, json=data)
+            filenamePub = const.KEY_PUB_FILE_NAME
+            filePub = const.KEY_PATH_SERVER + filenamePub
 
-        return params
+            if os.path.exists(filePrv):
+                os.remove(filePrv)
+                f = open(filePrv, "x")
+                f.close
+
+            if os.path.exists(const.KEY_PATH_SERVER) == False:
+                os.mkdir(const.KEY_PATH_SERVER)
+                f = open(filePrv, "x")
+                f.close
+
+            if os.path.exists(filePub):
+                os.remove(filePub)
+                f = open(filePub, "x")
+                f.close
+
+            if os.path.exists(const.KEY_PATH_SERVER) == False:
+                os.mkdir(const.KEY_PATH_SERVER)
+                f = open(filePub, "x")
+                f.close
+        
+    def createNewKey(name, mode):
+
+        APICaller.createNewFiles(mode)
+
+        if mode == const.CLIENT_MODE:
+            filenamePrv = const.KEY_PRV_FILE_NAME
+            filePrv = const.KEY_PATH_CLIENT + filenamePrv
+
+            filenamePub = const.KEY_PUB_FILE_NAME
+            filePub = const.KEY_PATH_CLIENT + filenamePub
+
+        if mode == const.SERVER_MODE:
+            filenamePrv = const.KEY_PRV_FILE_NAME
+            filePrv = const.KEY_PATH_SERVER + filenamePrv
+
+            filenamePub = const.KEY_PUB_FILE_NAME
+            filePub = const.KEY_PATH_SERVER + filenamePub
+
+        key = RSA.generate(2048)
+
+        PrivKey = key.exportKey('PEM')
+        PubKey = key.publickey().exportKey('PEM')
+
+        f = open(filePrv, 'wb')
+        f.write(PrivKey)
+        f.close()
+
+        f = open(filePub, 'wb')
+        f.write(PubKey)
+        f.close()
+
+        data = {
+            'ID': name,
+            'pubKey': str(PubKey)
+        }
+
+        requestUrl = 'https://' + const.KEY_SERVER + ':' + str(const.KEY_SERVER_PORT) + const.KEY_CREATE_NEW_KEY
+
+        requests.post( requestUrl, json=data)
 
     def getKey(mode):
 
-        filename = "keys.json"
-        file = const.KEY_PATH + filename
+        if mode == const.CLIENT_MODE:
+            filename = const.KEY_FILE_NAME
+            file = const.KEY_PATH_CLIENT + filename
 
-        f = open(file, "r")
-        content = json.loads(f.read().strip())
+        if mode == const.SERVER_MODE:
+            filename = const.KEY_FILE_NAME
+            file = const.KEY_PATH_SERVER + filename
 
-        if mode == 'public':
+        f = open(file, 'r')
+        key = RSA.import_key(f.read())
 
-            return content.pub
-
-        if mode == 'private':
-
-            return content.prv
+        return key
 
     def getServerKey():
         nameparts = const.HOST.split('.')
@@ -70,37 +128,48 @@ class APICaller():
             'id': hostName
         }
 
-        key = requests.get('https://' + const.KEY_SERVER +
-                           ':' + const.KEY_SERVER_PORT, params=params)
+        requestUrl:str = 'https://' + const.KEY_SERVER + ':' + str(const.KEY_SERVER_PORT) + const.KEY_GET_A_KEY
 
-        return key
+        key = requests.get(requestUrl, params=params)
+
+        data: Key = json.loads(key)
+
+        return data.pubKey
 
     def getClientKey(name: str):
         params = {
             'id': name
         }
 
-        key = requests.get('https://' + const.KEY_SERVER +
-                           ':' + const.KEY_SERVER_PORT, params=params)
+        requestUrl: str = 'https://' + const.KEY_SERVER + ':' + \
+            str(const.KEY_SERVER_PORT) + const.KEY_GET_A_KEY
 
-        return key
+        key = requests.get(requestUrl, params=params)
+
+        data: Key = json.loads(key)
+
+        return data.pubKey
 
     def encryptData(data, mode: str, name: str):
 
-        if mode == const.CLIENT_MODE:
-            result = rsa.encrypt(data, APICaller.getClientKey(name))
-
         if mode == const.SERVER_MODE:
-            result = rsa.encrypt(data, APICaller.getServerKey())
+
+            recipient_key = RSA.import_key(APICaller.getClientKey(name))
+            cipher_rsa = PKCS1_OAEP.new(recipient_key)
+            result = cipher_rsa.encrypt(data)
+
+        if mode == const.CLIENT_MODE:
+
+            recipient_key = RSA.import_key(APICaller.getServerKey())
+            cipher_rsa = PKCS1_OAEP.new(recipient_key)
+            result = cipher_rsa.encrypt(data)
 
         return result
 
-    def decryptData(data, mode: str, name: str):
+    def decryptData(data, mode):
 
-        if mode == const.CLIENT_MODE:
-            result = rsa.decrypt(data, APICaller.getClientKey(name))
-
-        if mode == const.SERVER_MODE:
-            result = rsa.decrypt(data, APICaller.getServerKey())
+        recipient_key = APICaller.getKey(mode)
+        cipher_rsa = PKCS1_OAEP.new(recipient_key)
+        result = cipher_rsa.decrypt(data)
 
         return result
