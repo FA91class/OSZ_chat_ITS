@@ -1,11 +1,9 @@
-from Crypto import PublicKey
 from model.Key import Key
 import os
 import json
 import requests
-from Crypto.PublicKey import RSA
-from Crypto.Cipher import PKCS1_OAEP
 from helper import const
+import rsa
 
 
 class APICaller():
