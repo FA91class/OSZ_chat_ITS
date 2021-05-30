@@ -15,3 +15,5 @@ KEY_GET_A_KEY = "/getPublicKeyById"
 KEY_CREATE_NEW_KEY = "/setPublicKey"
 SERVER_MODE = "server"
 CLIENT_MODE = "client"
+
+RAS_LENGTH = 2048

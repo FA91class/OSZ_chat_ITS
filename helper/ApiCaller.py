@@ -1,3 +1,5 @@
+from json.encoder import JSONEncoder
+from rsa.key import PrivateKey, PublicKey
 from model.Key import Key
 import os
 import json
@@ -82,40 +84,37 @@ class APICaller():
             filenamePub = const.KEY_PUB_FILE_NAME
             filePub = const.KEY_PATH_SERVER + filenamePub
 
-        key = RSA.generate(2048)
+        (PubKey, PrivKey) = rsa.newkeys(const.RAS_LENGTH)
 
-        PrivKey = key.exportKey('PEM')
-        PubKey = key.publickey().exportKey('PEM')
-
-        f = open(filePrv, 'wb')
-        f.write(PrivKey)
+        f = open(filePrv, 'w')
+        f.write(PrivKey.save_pkcs1().decode('utf-8'))
         f.close()
 
-        f = open(filePub, 'wb')
-        f.write(PubKey)
+        f = open(filePub, 'w')
+        f.write(PubKey.save_pkcs1().decode('utf-8'))
         f.close()
 
         data = {
-            'ID': name,
-            'pubKey': str(PubKey)
+            'id': name,
+            'pubKey': PubKey.save_pkcs1().decode('utf-8')
         }
 
-        requestUrl = 'https://' + const.KEY_SERVER + ':' + str(const.KEY_SERVER_PORT) + const.KEY_CREATE_NEW_KEY
+        requestUrl = 'http://' + const.KEY_SERVER + ':' + str(const.KEY_SERVER_PORT) + const.KEY_CREATE_NEW_KEY
 
-        requests.post( requestUrl, json=data)
+        requests.post( requestUrl, json=data )
 
     def getKey(mode):
 
         if mode == const.CLIENT_MODE:
-            filename = const.KEY_FILE_NAME
+            filename = const.KEY_PRV_FILE_NAME
             file = const.KEY_PATH_CLIENT + filename
 
         if mode == const.SERVER_MODE:
-            filename = const.KEY_FILE_NAME
+            filename = const.KEY_PRV_FILE_NAME
             file = const.KEY_PATH_SERVER + filename
 
         f = open(file, 'r')
-        key = RSA.import_key(f.read())
+        key = f.read()
 
         return key
 
@@ -126,48 +125,45 @@ class APICaller():
             'id': hostName
         }
 
-        requestUrl:str = 'https://' + const.KEY_SERVER + ':' + str(const.KEY_SERVER_PORT) + const.KEY_GET_A_KEY
+        requestUrl:str = 'http://' + const.KEY_SERVER + ':' + str(const.KEY_SERVER_PORT) + const.KEY_GET_A_KEY
 
-        key = requests.get(requestUrl, params=params)
+        key = requests.get(url=requestUrl, params=params)
 
-        data: Key = json.loads(key)
+        data: Key = json.loads(key.content)
 
-        return data.pubKey
+        return data['pubKey']
 
     def getClientKey(name: str):
         params = {
             'id': name
         }
 
-        requestUrl: str = 'https://' + const.KEY_SERVER + ':' + \
+        requestUrl: str = 'http://' + const.KEY_SERVER + ':' + \
             str(const.KEY_SERVER_PORT) + const.KEY_GET_A_KEY
 
         key = requests.get(requestUrl, params=params)
 
-        data: Key = json.loads(key)
+        data = json.loads(key.content)
 
-        return data.pubKey
+        return data['pubKey']
 
     def encryptData(data, mode: str, name: str):
 
         if mode == const.SERVER_MODE:
 
-            recipient_key = RSA.import_key(APICaller.getClientKey(name))
-            cipher_rsa = PKCS1_OAEP.new(recipient_key)
-            result = cipher_rsa.encrypt(data)
+            key = APICaller.getClientKey(name)
+            result = rsa.encrypt(data, rsa.PublicKey.load_pkcs1(key))
 
         if mode == const.CLIENT_MODE:
 
-            recipient_key = RSA.import_key(APICaller.getServerKey())
-            cipher_rsa = PKCS1_OAEP.new(recipient_key)
-            result = cipher_rsa.encrypt(data)
+            key = APICaller.getServerKey()
+            result = rsa.encrypt(data, rsa.PublicKey.load_pkcs1(key))
 
         return result
 
     def decryptData(data, mode):
 
-        recipient_key = APICaller.getKey(mode)
-        cipher_rsa = PKCS1_OAEP.new(recipient_key)
-        result = cipher_rsa.decrypt(data)
+        key = APICaller.getKey(mode)
+        result = rsa.decrypt(data, rsa.PrivateKey.load_pkcs1(key))
 
         return result

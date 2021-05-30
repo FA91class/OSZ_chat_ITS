@@ -21,7 +21,7 @@ def on_new_client(client_socket: socket.socket, addr):
     print(connect)
     try:
         while True:
-            APICaller.checkKeys(const.SERVER_MODE)
+            # APICaller.checkKeys(const.SERVER_MODE)
             msg = client_socket.recv(1024)
             if not msg:
                 break
@@ -33,7 +33,7 @@ def on_new_client(client_socket: socket.socket, addr):
                 Logger.log_message(m)
                 msg = MessageParser.message_to_bytes(m)
                 SESSION.broadcast_message(APICaller.encryptData(
-                    msg, const.CLIENT_MODE, m.sender), client_socket)
+                    msg, const.SERVER_MODE, m.sender), client_socket)
                 print(m.msg)
                 client_socket.close()
                 break
@@ -43,14 +43,14 @@ def on_new_client(client_socket: socket.socket, addr):
                 msg = MessageParser.message_to_bytes(m)
                 SESSION.socket_list.append(client_socket)
                 SESSION.broadcast_message(APICaller.encryptData(
-                    msg, const.CLIENT_MODE, m.sender), client_socket)
+                    msg, const.SERVER_MODE, m.sender), client_socket)
                 continue
             else:
                 m.msg = Style.print_message(m)
                 Logger.log_message(m)
                 msg = MessageParser.message_to_bytes(m)
                 SESSION.broadcast_message(APICaller.encryptData(
-                    msg, const.CLIENT_MODE, m.sender), cast(socket.socket, None))
+                    msg, const.SERVER_MODE, m.sender), cast(socket.socket, None))
         client_socket.close()
     except (ConnectionAbortedError, ConnectionResetError):
         close = "Connection with " + str(addr) + " closed!"
@@ -63,6 +63,7 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
     nameparts = const.HOST.split('.')
     hostName = '_'.join(nameparts)
     APICaller.createNewKey(hostName, const.SERVER_MODE)
+    print("Server has loadet!")
 
     while True:
         conn, address = s.accept()
