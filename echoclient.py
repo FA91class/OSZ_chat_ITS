@@ -10,8 +10,8 @@ from model import Message
 
 HOST = const.HOST
 PORT = const.PORT
-CURSOR_UP_ONE = '\x1b[1A'
-ERASE_LINE = '\x1b[2K'
+CURSOR_UP_ONE = '\033[A'
+ERASE_LINE = '\033[2K'
 
 
 def message_listener(skt: socket.socket):
