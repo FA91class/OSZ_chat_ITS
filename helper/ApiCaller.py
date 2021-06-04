@@ -103,7 +103,7 @@ class APICaller():
 
         requests.post( requestUrl, json=data )
 
-    def getKey(mode):
+    def getPrvKey(mode):
 
         if mode == const.CLIENT_MODE:
             filename = const.KEY_PRV_FILE_NAME
@@ -163,7 +163,7 @@ class APICaller():
 
     def decryptData(data, mode):
 
-        key = APICaller.getKey(mode)
+        key = APICaller.getPrvKey(mode)
         result = rsa.decrypt(data, rsa.PrivateKey.load_pkcs1(key))
 
         return result
