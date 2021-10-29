@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 import socket
 import threading
 
@@ -6,15 +9,15 @@ from helper import MessageParser
 from helper import Style
 from helper import const
 from helper.ApiCaller import APICaller
-from model import Message
-from model import Session
+from model.Message import Message
+from model.Session import Session
 from model.Client import Client
 
 HOST = const.HOST
 PORT = const.PORT
 MODE = const.CLIENT_MODE
 
-SESSION = Session.Session()
+SESSION = Session()
 
 
 def on_new_client(client_socket: socket.socket, addr):
@@ -27,7 +30,7 @@ def on_new_client(client_socket: socket.socket, addr):
             msg = client_socket.recv(1024)
             if not msg:
                 break
-            m: Message.Message = MessageParser.bytes_to_message(
+            m: Message = MessageParser.bytes_to_message(
                 APICaller.decryptData(msg, const.SERVER_MODE))
 
             client = Client(client_socket, m.sender)
