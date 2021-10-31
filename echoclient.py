@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+from os import error, truncate
 import socket
 import sys
 import threading
@@ -20,7 +21,10 @@ ERASE_LINE = '\033[2K'
 def message_listener(skt: socket.socket):
     try:
         while True:
-            data = skt.recv(1024)
+            try:
+                data = skt.recv(1024)
+            except Exception:
+                break
             if not data:
                 break
             msg: Message = MessageParser.bytes_to_message(
@@ -48,7 +52,7 @@ try:
             string = input("")
             sys.stdout.write(CURSOR_UP_ONE)
             sys.stdout.write(ERASE_LINE)
-            if "!logout" in string:
+            if string == "LOGOUT":
                 m = Message(datetime.now().strftime(
                     const.TIME_FILTER), "LOGOUT", UNAME)
                 send = MessageParser.message_to_bytes(m)

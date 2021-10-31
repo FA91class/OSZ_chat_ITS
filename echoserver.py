@@ -35,7 +35,7 @@ def on_new_client(client_socket: socket.socket, addr):
 
             client = Client(client_socket, m.sender)
 
-            if "LOGOUT" in m.msg:
+            if "!logout" in m.msg:
                 try:
                     SESSION.client_list.remove(client)
                 except ValueError as e:
@@ -60,7 +60,7 @@ def on_new_client(client_socket: socket.socket, addr):
                 msg = MessageParser.message_to_bytes(m)
                 SESSION.broadcast_message(msg, client)
 
-    except (ConnectionAbortedError, ConnectionResetError):
+    except (ConnectionAbortedError, ConnectionResetError, BrokenPipeError):
         client_socket.close()
         close = "Connection with " + str(addr) + " closed!"
         print(close)

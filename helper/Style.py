@@ -19,3 +19,4 @@ def logout_message(msg: Message.Message):
 
 def login_message(msg: Message.Message):
     return "[" + msg.timestamp + "](" + msg.sender + ") // Logged in "
+    
